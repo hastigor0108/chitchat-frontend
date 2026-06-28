@@ -1,11 +1,65 @@
 const SECRET_CODE = "SHREE SHUBHAM GOR";
 
-/* SOCKET (GLOBAL - FIXED) */
-let socket = io("https://chitchat-backend-ieyw.onrender.com");
+/* ROOM (MUST BE TOP) */
+let room = sessionStorage.getItem("invite");
+
+/* SOCKET */
+let socket = io("https://chitchat-backend-ieyw.onrender.com", {
+  transports: ["websocket", "polling"]
+});
 
 socket.on("connect", () => {
   console.log("connected:", socket.id);
 });
+
+/* INIT CHAT PAGE */
+if (window.location.pathname.includes("chat.html")) {
+
+  let user = sessionStorage.getItem("user");
+
+  if (!user) {
+    window.location = "index.html";
+  }
+
+  document.getElementById("userName").innerText = user;
+
+  /* JOIN ROOM */
+  socket.emit("join-room", room);
+
+  /* RECEIVE MESSAGE */
+  socket.on("receive-message", (data) => {
+    addMessage(data);
+  });
+
+  /* CHAT HISTORY */
+  socket.on("chat-history", (messages) => {
+    messages.forEach(addMessage);
+  });
+
+  /* TYPING */
+  socket.on("typing", (data) => {
+    if (data.user === user) return;
+
+    let box = document.getElementById("typing");
+    box.innerHTML = `${data.user} is typing...`;
+
+    setTimeout(() => {
+      box.innerHTML = "";
+    }, 1000);
+  });
+
+  /* INPUT TYPING */
+  document.getElementById("msg").addEventListener("input", () => {
+    socket.emit("typing", { user });
+  });
+
+  /* ENTER KEY */
+  document.getElementById("msg").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  });
+}
 
 /* LOGIN */
 function enterChat() {
@@ -23,56 +77,13 @@ function enterChat() {
   }
 
   sessionStorage.setItem("user", name);
+  sessionStorage.setItem("invite", code);
+
   window.location = "chat.html";
-}
-
-/* INIT CHAT PAGE */
-if (window.location.pathname.includes("chat.html")) {
-
-  let user = sessionStorage.getItem("user");
-
-  if (!user) {
-    window.location = "index.html";
-  }
-
-  document.getElementById("userName").innerText = user;
-
-  /* RECEIVE MESSAGE */
-  socket.on("receive-message", (data) => {
-    addMessage(data);
-  });
-
-  /* TYPING */
-  socket.on("typing", (data) => {
-    if (data.user === user) return;
-
-    let box = document.getElementById("typing");
-    box.innerHTML = `${data.user} is typing...`;
-
-    setTimeout(() => {
-      box.innerHTML = "";
-    }, 1000);
-  });
-
-  /* INPUT TYPING EMIT */
-  document.getElementById("msg").addEventListener("input", () => {
-    socket.emit("typing", { user });
-  });
-
-  /* ENTER KEY SUPPORT */
-  document.getElementById("msg").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
-  });
 }
 
 /* SEND MESSAGE */
 function sendMessage() {
-  if (!socket) {
-    console.log("Socket not ready");
-    return;
-  }
 
   let input = document.getElementById("msg");
   let text = input.value.trim();
@@ -84,13 +95,16 @@ function sendMessage() {
   socket.emit("send-message", {
     user,
     message: text,
-    time: new Date().toLocaleTimeString()
+    time: new Date().toLocaleTimeString(),
+    room: room
   });
 
   input.value = "";
 }
-/* ADD MESSAGE UI */
+
+/* ADD MESSAGE */
 function addMessage(data) {
+
   let box = document.getElementById("messages");
   let current = sessionStorage.getItem("user");
 
