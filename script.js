@@ -1,7 +1,7 @@
 const SECRET_CODE = "SHREE SHUBHAM GOR";
 
-/* ROOM (SAFE) */
-let room = sessionStorage.getItem("invite") || "default";
+/* ROOM */
+let room = null;
 
 /* SOCKET */
 let socket = io("https://chitchat-backend-ieyw.onrender.com", {
@@ -12,8 +12,9 @@ let socket = io("https://chitchat-backend-ieyw.onrender.com", {
 socket.on("connect", () => {
   console.log("connected:", socket.id);
 
-  // JOIN ROOM AFTER CONNECT
-  socket.emit("join-room", room);
+  if (room) {
+    socket.emit("join-room", room);
+  }
 });
 
 /* LOGIN */
@@ -42,8 +43,9 @@ function enterChat() {
 if (window.location.pathname.includes("chat.html")) {
 
   let user = sessionStorage.getItem("user");
+  room = sessionStorage.getItem("invite");
 
-  if (!user) {
+  if (!user || !room) {
     window.location = "index.html";
   }
 
@@ -123,7 +125,7 @@ function addMessage(data) {
   box.scrollTop = box.scrollHeight;
 }
 
-/* CLEAR CHAT (ONLY UI) */
+/* CLEAR CHAT */
 function clearChat() {
   document.getElementById("messages").innerHTML = "";
 }
