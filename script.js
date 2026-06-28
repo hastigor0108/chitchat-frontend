@@ -15,14 +15,23 @@ let socket = io("https://chitchat-backend-ieyw.onrender.com", {
 socket.on("connect", () => {
   console.log("CONNECTED:", socket.id);
 
-  if (room) {
-    socket.emit("join-room", room);
+  room = sessionStorage.getItem("invite");
+
+  if (!room) {
+    console.log("NO ROOM FOUND");
+    return;
   }
+
+  socket.emit("join-room", room);
 });
 
 /* CONNECTION ERROR DEBUG */
 socket.on("connect_error", (err) => {
   console.log("SOCKET ERROR:", err.message);
+});
+
+socket.on("disconnect", () => {
+  console.log("DISCONNECTED");
 });
 
 /* LOGIN */
@@ -110,11 +119,11 @@ function sendMessage() {
   let user = sessionStorage.getItem("user");
 
   socket.emit("send-message", {
-    user,
-    message: text,
-    time: new Date().toLocaleTimeString(),
-    room: room
-  });
+  user,
+  message: text,
+  time: new Date().toLocaleTimeString(),
+  room: sessionStorage.getItem("invite")
+});
 
   input.value = "";
 }
