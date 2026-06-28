@@ -1,16 +1,42 @@
 const SECRET_CODE = "SHREE SHUBHAM GOR";
 
-/* ROOM (MUST BE TOP) */
-let room = sessionStorage.getItem("invite");
+/* ROOM (SAFE) */
+let room = sessionStorage.getItem("invite") || "default";
 
 /* SOCKET */
 let socket = io("https://chitchat-backend-ieyw.onrender.com", {
   transports: ["websocket", "polling"]
 });
 
+/* CONNECT */
 socket.on("connect", () => {
   console.log("connected:", socket.id);
+
+  // JOIN ROOM AFTER CONNECT
+  socket.emit("join-room", room);
 });
+
+/* LOGIN */
+function enterChat() {
+
+  let name = document.getElementById("name").value.trim();
+  let code = document.getElementById("invite").value.trim();
+
+  if (!name) {
+    alert("Enter name 💌");
+    return;
+  }
+
+  if (code !== SECRET_CODE) {
+    alert("Wrong invite code ❌");
+    return;
+  }
+
+  sessionStorage.setItem("user", name);
+  sessionStorage.setItem("invite", code);
+
+  window.location = "chat.html";
+}
 
 /* INIT CHAT PAGE */
 if (window.location.pathname.includes("chat.html")) {
@@ -23,17 +49,14 @@ if (window.location.pathname.includes("chat.html")) {
 
   document.getElementById("userName").innerText = user;
 
-  /* JOIN ROOM */
-  socket.emit("join-room", room);
+  /* CHAT HISTORY */
+  socket.on("chat-history", (messages) => {
+    messages.forEach(addMessage);
+  });
 
   /* RECEIVE MESSAGE */
   socket.on("receive-message", (data) => {
     addMessage(data);
-  });
-
-  /* CHAT HISTORY */
-  socket.on("chat-history", (messages) => {
-    messages.forEach(addMessage);
   });
 
   /* TYPING */
@@ -59,27 +82,6 @@ if (window.location.pathname.includes("chat.html")) {
       sendMessage();
     }
   });
-}
-
-/* LOGIN */
-function enterChat() {
-  let name = document.getElementById("name").value.trim();
-  let code = document.getElementById("invite").value.trim();
-
-  if (!name) {
-    alert("Enter name 💌");
-    return;
-  }
-
-  if (code !== SECRET_CODE) {
-    alert("Wrong invite code ❌");
-    return;
-  }
-
-  sessionStorage.setItem("user", name);
-  sessionStorage.setItem("invite", code);
-
-  window.location = "chat.html";
 }
 
 /* SEND MESSAGE */
@@ -121,7 +123,7 @@ function addMessage(data) {
   box.scrollTop = box.scrollHeight;
 }
 
-/* CLEAR CHAT */
+/* CLEAR CHAT (ONLY UI) */
 function clearChat() {
   document.getElementById("messages").innerHTML = "";
 }
