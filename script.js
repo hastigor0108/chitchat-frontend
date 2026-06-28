@@ -1,38 +1,60 @@
 const SECRET_CODE = "SHREE SHUBHAM GOR";
 
-/* ROOM */
+let socket;
 let room = null;
 
-/* SOCKET (MOBILE SAFE) */
-let socket = io("https://chitchat-backend-ieyw.onrender.com", {
-  transports: ["polling", "websocket"],
-  secure: true,
-  reconnection: true,
-  timeout: 20000
-});
+/* INIT SOCKET SAFELY */
+function initSocket() {
 
-/* CONNECT */
-socket.on("connect", () => {
-  console.log("CONNECTED:", socket.id);
-
-  room = sessionStorage.getItem("invite");
-
-  if (!room) {
-    console.log("NO ROOM FOUND");
+  if (typeof io === "undefined") {
+    console.log("Waiting for socket.io...");
+    setTimeout(initSocket, 300);
     return;
   }
 
-  socket.emit("join-room", room);
-});
+  socket = io("https://chitchat-backend-ieyw.onrender.com", {
+    transports: ["polling", "websocket"],
+    secure: true,
+    reconnection: true
+  });
 
-/* CONNECTION ERROR DEBUG */
-socket.on("connect_error", (err) => {
-  console.log("SOCKET ERROR:", err.message);
-});
+  socket.on("connect", () => {
+    console.log("CONNECTED:", socket.id);
 
-socket.on("disconnect", () => {
-  console.log("DISCONNECTED");
-});
+    room = sessionStorage.getItem("invite");
+
+    if (room) {
+      socket.emit("join-room", room);
+    }
+  });
+
+  socket.on("connect_error", (err) => {
+    console.log("SOCKET ERROR:", err.message);
+  });
+
+  /* RECEIVE MESSAGE */
+  socket.on("receive-message", addMessage);
+
+  /* CHAT HISTORY */
+  socket.on("chat-history", (messages) => {
+    messages.forEach(addMessage);
+  });
+
+  /* TYPING */
+  socket.on("typing", (data) => {
+    let user = sessionStorage.getItem("user");
+    if (data.user === user) return;
+
+    let box = document.getElementById("typing");
+    box.innerText = `${data.user} is typing...`;
+
+    setTimeout(() => {
+      box.innerText = "";
+    }, 1000);
+  });
+}
+
+initSocket();
 
 /* LOGIN */
 function enterChat() {
@@ -68,39 +90,10 @@ if (window.location.pathname.includes("chat.html")) {
 
   document.getElementById("userName").innerText = user;
 
-  /* JOIN ROOM AFTER CONNECT */
-  socket.on("connect", () => {
-    socket.emit("join-room", room);
-  });
-
-  /* CHAT HISTORY */
-  socket.on("chat-history", (messages) => {
-    messages.forEach(addMessage);
-  });
-
-  /* RECEIVE MESSAGE */
-  socket.on("receive-message", (data) => {
-    addMessage(data);
-  });
-
-  /* TYPING */
-  socket.on("typing", (data) => {
-    if (data.user === user) return;
-
-    let box = document.getElementById("typing");
-    box.innerHTML = `${data.user} is typing...`;
-
-    setTimeout(() => {
-      box.innerHTML = "";
-    }, 1000);
-  });
-
-  /* INPUT TYPING */
   document.getElementById("msg").addEventListener("input", () => {
     socket.emit("typing", { user });
   });
 
-  /* ENTER KEY */
   document.getElementById("msg").addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       sendMessage();
@@ -119,11 +112,11 @@ function sendMessage() {
   let user = sessionStorage.getItem("user");
 
   socket.emit("send-message", {
-  user,
-  message: text,
-  time: new Date().toLocaleTimeString(),
-  room: sessionStorage.getItem("invite")
-});
+    user,
+    message: text,
+    time: new Date().toLocaleTimeString(),
+    room: room
+  });
 
   input.value = "";
 }
