@@ -27,17 +27,10 @@ function initSocket() {
 
     if (room) {
       socket.emit("join-room", room);
-      console.log("JOINED ROOM:", room);
     }
   });
 
-  socket.on("connect_error", (err) => {
-    console.log("CONNECT ERROR:", err.message);
-  });
-
-  socket.on("receive-message", (data) => {
-    addMessage(data);
-  });
+  socket.on("receive-message", addMessage);
 
   socket.on("chat-history", (messages) => {
     messages.forEach(addMessage);
@@ -64,15 +57,9 @@ function enterChat() {
   let name = document.getElementById("name").value.trim();
   let code = document.getElementById("invite").value.trim();
 
-  if (!name) {
-    alert("Enter name 💌");
-    return;
-  }
+  if (!name) return alert("Enter name 💌");
 
-  if (code !== SECRET_CODE) {
-    alert("Wrong invite code ❌");
-    return;
-  }
+  if (code !== SECRET_CODE) return alert("Wrong invite code ❌");
 
   sessionStorage.setItem("user", name);
   sessionStorage.setItem("invite", code);
@@ -101,43 +88,41 @@ if (window.location.pathname.includes("chat.html")) {
   });
 }
 
-/* SEND MESSAGE (SAFE) */
+/* SEND MESSAGE (FINAL SAFE) */
 function sendMessage() {
 
-  console.log("SEND CLICKED");
+  let input = document.getElementById("msg");
+  if (!input) return;
+
+  let text = input.value.trim();
+  if (!text) return;
 
   if (!socketReady || !socket) {
     console.log("Socket not ready");
     return;
   }
 
-  let input = document.getElementById("msg");
-  let text = input.value.trim();
-
-  if (!text) return;
-
   let user = sessionStorage.getItem("user");
   room = sessionStorage.getItem("invite");
 
-  if (!room) {
-    console.log("No room found");
-    return;
-  }
+  if (!room) return;
 
   socket.emit("send-message", {
     user,
     message: text,
     time: new Date().toLocaleTimeString(),
-    room: room
+    room
   });
 
   input.value = "";
 }
 
-/* SHOW MESSAGE */
+/* ADD MESSAGE */
 function addMessage(data) {
 
   let box = document.getElementById("messages");
+  if (!box) return;
+
   let current = sessionStorage.getItem("user");
 
   let div = document.createElement("div");
@@ -153,7 +138,8 @@ function addMessage(data) {
   box.scrollTop = box.scrollHeight;
 }
 
-/* CLEAR */
+/* CLEAR CHAT */
 function clearChat() {
-  document.getElementById("messages").innerHTML = "";
+  let box = document.getElementById("messages");
+  if (box) box.innerHTML = "";
 }
