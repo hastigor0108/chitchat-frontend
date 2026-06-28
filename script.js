@@ -4,7 +4,7 @@ let socket = null;
 let room = null;
 let socketReady = false;
 
-/* SAFE SOCKET INIT */
+/* SOCKET INIT */
 function initSocket() {
 
   if (typeof io === "undefined") {
@@ -12,30 +12,55 @@ function initSocket() {
     return;
   }
 
-socket = io("https://chitchat-backend-ieyw.onrender.com", {
-  transports: ["polling"],
-  forceNew: true,
-  reconnection: true
-});
-
-  socket.on("connect", () => {
-  console.log("SOCKET CONNECTED ✔", socket.id);
-});
-
-socket.on("connect_error", (err) => {
-  console.log("SOCKET ERROR ❌", err.message);
-});
-  socket.on("receive-message", addMessage);
-
-  socket.on("chat-history", (messages) => {
-    messages.forEach(addMessage);
+  socket = io("https://chitchat-backend-ieyw.onrender.com", {
+    transports: ["polling"],
+    forceNew: true,
+    reconnection: true
   });
 
+  /* CONNECT */
+  socket.on("connect", () => {
+
+    console.log("SOCKET CONNECTED ✔", socket.id);
+
+    socketReady = true;
+
+    room = sessionStorage.getItem("invite");
+
+    if (room) {
+      console.log("JOIN ROOM:", room);
+      socket.emit("join-room", room);
+    } else {
+      console.log("NO ROOM FOUND ❌");
+    }
+  });
+
+  /* ERROR */
+  socket.on("connect_error", (err) => {
+    console.log("SOCKET ERROR ❌", err.message);
+  });
+
+  /* RECEIVE MESSAGE */
+  socket.on("receive-message", (data) => {
+    addMessage(data);
+  });
+
+  /* CHAT HISTORY */
+  socket.on("chat-history", (messages) => {
+    if (messages && Array.isArray(messages)) {
+      messages.forEach(addMessage);
+    }
+  });
+
+  /* TYPING */
   socket.on("typing", (data) => {
+
     let user = sessionStorage.getItem("user");
     if (data.user === user) return;
 
     let box = document.getElementById("typing");
+    if (!box) return;
+
     box.innerText = `${data.user} is typing...`;
 
     setTimeout(() => {
@@ -74,16 +99,20 @@ if (window.location.pathname.includes("chat.html")) {
 
   document.getElementById("userName").innerText = user;
 
+  /* typing emit */
   document.getElementById("msg").addEventListener("input", () => {
-    if (socket) socket.emit("typing", { user });
+    if (socket && socketReady) {
+      socket.emit("typing", { user });
+    }
   });
 
+  /* enter key */
   document.getElementById("msg").addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendMessage();
   });
 }
 
-/* SEND MESSAGE (FINAL SAFE) */
+/* SEND MESSAGE */
 function sendMessage() {
 
   let input = document.getElementById("msg");
@@ -92,15 +121,20 @@ function sendMessage() {
   let text = input.value.trim();
   if (!text) return;
 
-  if (!socketReady || !socket) {
-    console.log("Socket not ready");
+  if (!socket || !socketReady) {
+    console.log("Socket not ready ❌");
     return;
   }
 
   let user = sessionStorage.getItem("user");
   room = sessionStorage.getItem("invite");
 
-  if (!room) return;
+  if (!room) {
+    console.log("Room missing ❌");
+    return;
+  }
+
+  console.log("SENDING MESSAGE ✔");
 
   socket.emit("send-message", {
     user,
