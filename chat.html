@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 <meta charset="UTF-8">
@@ -12,17 +12,23 @@
 
 <div class="chat-container">
 
+<!-- TOP BAR -->
 <div class="top">
 <h2>💌 ChitChat</h2>
 <span id="userName"></span>
 </div>
 
+<!-- MESSAGES -->
 <div id="messages" class="messages"></div>
+
+<!-- TYPING STATUS -->
 <div id="typing" class="typing"></div>
 
+<!-- INPUT AREA -->
 <div class="bottom">
 
-<input id="msg" placeholder="Type message...">
+<input id="msg" type="text" placeholder="Type message..." autocomplete="off">
+
 <button onclick="sendMessage()">Send</button>
 <button onclick="clearChat()">Clear</button>
 
@@ -30,7 +36,10 @@
 
 </div>
 
+<!-- SOCKET.IO (MUST LOAD FIRST) -->
 <script src="/socket.io/socket.io.js"></script>
+
+<!-- MAIN SCRIPT -->
 <script src="script.js"></script>
 
 </body>
