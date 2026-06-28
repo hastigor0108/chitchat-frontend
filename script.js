@@ -12,10 +12,11 @@ function initSocket() {
     return;
   }
 
-  socket = io("https://chitchat-backend-ieyw.onrender.com", {
-    transports: ["polling", "websocket"],
-    reconnection: true
-  });
+socket = io("https://chitchat-backend-ieyw.onrender.com", {
+  transports: ["polling"],
+  forceNew: true,
+  reconnection: true
+});
 
   socket.on("connect", () => {
   console.log("SOCKET CONNECTED ✔", socket.id);
