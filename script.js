@@ -69,6 +69,11 @@ if (window.location.pathname.includes("chat.html")) {
 
 /* SEND MESSAGE */
 function sendMessage() {
+  if (!socket) {
+    console.log("Socket not ready");
+    return;
+  }
+
   let input = document.getElementById("msg");
   let text = input.value.trim();
 
@@ -84,7 +89,6 @@ function sendMessage() {
 
   input.value = "";
 }
-
 /* ADD MESSAGE UI */
 function addMessage(data) {
   let box = document.getElementById("messages");
