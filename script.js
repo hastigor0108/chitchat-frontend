@@ -26,7 +26,7 @@ let socket = null;
 
 if(window.location.pathname.includes("chat.html")){
 
-socket = io();
+socket = io("https://chitchat-backend-ieyw.onrender.com");
 
 let user = sessionStorage.getItem("user");
 
