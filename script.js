@@ -1,4 +1,4 @@
-const SECRET_CODE = "scode";
+const SECRET_CODE = "SHREE SHUBHAM GOR";
 
 /* LOGIN */
 function enterChat(){
