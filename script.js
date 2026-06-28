@@ -3,11 +3,10 @@ const SECRET_CODE = "SHREE SHUBHAM GOR";
 let socket;
 let room = null;
 
-/* INIT SOCKET SAFELY */
+/* SAFE SOCKET INIT (MOBILE FIX) */
 function initSocket() {
 
   if (typeof io === "undefined") {
-    console.log("Waiting for socket.io...");
     setTimeout(initSocket, 300);
     return;
   }
@@ -25,6 +24,7 @@ function initSocket() {
 
     if (room) {
       socket.emit("join-room", room);
+      console.log("JOIN ROOM:", room);
     }
   });
 
@@ -32,15 +32,12 @@ function initSocket() {
     console.log("SOCKET ERROR:", err.message);
   });
 
-  /* RECEIVE MESSAGE */
   socket.on("receive-message", addMessage);
 
-  /* CHAT HISTORY */
   socket.on("chat-history", (messages) => {
     messages.forEach(addMessage);
   });
 
-  /* TYPING */
   socket.on("typing", (data) => {
     let user = sessionStorage.getItem("user");
     if (data.user === user) return;
@@ -95,9 +92,7 @@ if (window.location.pathname.includes("chat.html")) {
   });
 
   document.getElementById("msg").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
+    if (e.key === "Enter") sendMessage();
   });
 }
 
@@ -107,7 +102,7 @@ function sendMessage() {
   let input = document.getElementById("msg");
   let text = input.value.trim();
 
-  if (!text) return;
+  if (!text || !room) return;
 
   let user = sessionStorage.getItem("user");
 
