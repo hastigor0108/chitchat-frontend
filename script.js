@@ -1,10 +1,10 @@
 const SECRET_CODE = "SHREE SHUBHAM GOR";
 
-let socket;
+let socket = null;
 let room = null;
 let socketReady = false;
 
-/* INIT SOCKET SAFELY (MOBILE FIX) */
+/* SAFE SOCKET INIT */
 function initSocket() {
 
   if (typeof io === "undefined") {
@@ -18,6 +18,7 @@ function initSocket() {
   });
 
   socket.on("connect", () => {
+
     console.log("CONNECTED:", socket.id);
 
     socketReady = true;
@@ -26,14 +27,17 @@ function initSocket() {
 
     if (room) {
       socket.emit("join-room", room);
+      console.log("JOINED ROOM:", room);
     }
   });
 
   socket.on("connect_error", (err) => {
-    console.log("SOCKET ERROR:", err.message);
+    console.log("CONNECT ERROR:", err.message);
   });
 
-  socket.on("receive-message", addMessage);
+  socket.on("receive-message", (data) => {
+    addMessage(data);
+  });
 
   socket.on("chat-history", (messages) => {
     messages.forEach(addMessage);
@@ -89,7 +93,7 @@ if (window.location.pathname.includes("chat.html")) {
   document.getElementById("userName").innerText = user;
 
   document.getElementById("msg").addEventListener("input", () => {
-    socket.emit("typing", { user });
+    if (socket) socket.emit("typing", { user });
   });
 
   document.getElementById("msg").addEventListener("keydown", (e) => {
@@ -97,10 +101,12 @@ if (window.location.pathname.includes("chat.html")) {
   });
 }
 
-/* SEND MESSAGE (FIXED FOR MOBILE) */
+/* SEND MESSAGE (SAFE) */
 function sendMessage() {
 
-  if (!socketReady) {
+  console.log("SEND CLICKED");
+
+  if (!socketReady || !socket) {
     console.log("Socket not ready");
     return;
   }
@@ -113,7 +119,10 @@ function sendMessage() {
   let user = sessionStorage.getItem("user");
   room = sessionStorage.getItem("invite");
 
-  if (!room) return;
+  if (!room) {
+    console.log("No room found");
+    return;
+  }
 
   socket.emit("send-message", {
     user,
@@ -125,7 +134,7 @@ function sendMessage() {
   input.value = "";
 }
 
-/* ADD MESSAGE */
+/* SHOW MESSAGE */
 function addMessage(data) {
 
   let box = document.getElementById("messages");
@@ -144,7 +153,7 @@ function addMessage(data) {
   box.scrollTop = box.scrollHeight;
 }
 
-/* CLEAR CHAT */
+/* CLEAR */
 function clearChat() {
   document.getElementById("messages").innerHTML = "";
 }
