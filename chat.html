@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat 💌</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="chat-container">
+
+<div class="top">
+<h2>💌 ChitChat</h2>
+<span id="userName"></span>
+</div>
+
+<div id="messages" class="messages"></div>
+<div id="typing" class="typing"></div>
+
+<div class="bottom">
+
+<input id="msg" placeholder="Type message...">
+<button onclick="sendMessage()">Send</button>
+<button onclick="clearChat()">Clear</button>
+
+</div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
