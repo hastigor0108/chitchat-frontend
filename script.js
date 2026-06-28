@@ -18,18 +18,12 @@ function initSocket() {
   });
 
   socket.on("connect", () => {
+  console.log("SOCKET CONNECTED ✔", socket.id);
+});
 
-    console.log("CONNECTED:", socket.id);
-
-    socketReady = true;
-
-    room = sessionStorage.getItem("invite");
-
-    if (room) {
-      socket.emit("join-room", room);
-    }
-  });
-
+socket.on("connect_error", (err) => {
+  console.log("SOCKET ERROR ❌", err.message);
+});
   socket.on("receive-message", addMessage);
 
   socket.on("chat-history", (messages) => {
