@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 <meta charset="UTF-8">
@@ -16,10 +16,14 @@
 
 <p>Private chat for two</p>
 
-<input id="name" placeholder="Enter your name">
-<input id="invite" type="password" placeholder="Invite code">
+<!-- LOGIN BOX -->
+<input id="name" type="text" placeholder="Enter your name" autocomplete="off">
+<input id="invite" type="password" placeholder="Invite code" autocomplete="off">
 
 <button onclick="enterChat()">Join Chat</button>
+
+<!-- OPTIONAL ERROR MESSAGE -->
+<p id="error" style="color:red;"></p>
 
 </div>
 
