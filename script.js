@@ -1,4 +1,4 @@
-const SECRET_CODE = "SHREE SHUBHAM GOR";
+const SECRET_CODE = "2110";
 
 let socket = null;
 let room = null;
