@@ -31,20 +31,30 @@ sessionStorage.getItem(
 );
 
 if(room){
+
 socket.emit(
 "join-room",
 room
 );
+
 }
 
 });
 
+/* RECEIVE */
+
 socket.on(
 "receive-message",
 (data)=>{
-addMessage(data);
+
+addMessage(
+data
+);
+
 }
 );
+
+/* HISTORY */
 
 socket.on(
 "chat-history",
@@ -55,12 +65,55 @@ document.getElementById(
 "messages"
 );
 
-if(box){
+if(
+box
+){
+
 box.innerHTML="";
+
 }
 
 messages.forEach(
 addMessage
+);
+
+}
+);
+
+/* TYPING */
+
+socket.on(
+"typing",
+(data)=>{
+
+let current =
+sessionStorage.getItem(
+"user"
+);
+
+if(
+data.user === current
+)
+return;
+
+let box =
+document.getElementById(
+"typing"
+);
+
+if(!box)
+return;
+
+box.innerText =
+`${data.user} is typing...`;
+
+setTimeout(
+()=>{
+
+box.innerText="";
+
+},
+1000
 );
 
 }
@@ -71,6 +124,7 @@ addMessage
 initSocket();
 
 /* LOGIN */
+
 function enterChat(){
 
 let name =
@@ -89,21 +143,28 @@ document
 .value
 .trim();
 
-if(!name){
+if(
+!name
+){
+
 alert(
 "Enter name"
 );
+
 return;
+
 }
 
 if(
-code !==
-SECRET_CODE
+code !== SECRET_CODE
 ){
+
 alert(
 "Wrong code"
 );
+
 return;
+
 }
 
 sessionStorage.setItem(
@@ -137,8 +198,10 @@ sessionStorage.getItem(
 if(
 !user
 ){
+
 location.href =
 "index.html";
+
 }
 
 document
@@ -148,14 +211,16 @@ document
 .innerText =
 user;
 
-/* ENTER SEND */
+/* ENTER */
 
 let msg =
 document.getElementById(
 "msg"
 );
 
-if(msg){
+if(
+msg
+){
 
 msg.addEventListener(
 "keydown",
@@ -164,7 +229,29 @@ msg.addEventListener(
 if(
 e.key==="Enter"
 ){
+
 sendMessage();
+
+}
+
+}
+);
+
+msg.addEventListener(
+"input",
+()=>{
+
+if(
+socket
+){
+
+socket.emit(
+"typing",
+{
+user
+}
+);
+
 }
 
 }
@@ -181,15 +268,17 @@ function sendMessage(){
 if(
 !socket
 ){
+
 console.log(
 "NO SOCKET"
 );
+
 return;
+
 }
 
 let input =
-document
-.getElementById(
+document.getElementById(
 "msg"
 );
 
@@ -261,7 +350,8 @@ document.createElement(
 "div"
 );
 
-/* IMPORTANT FIX */
+/* IMPORTANT */
+
 div.className =
 "bubble " +
 (
@@ -272,9 +362,13 @@ data.user === current
 "left"
 );
 
-div.innerHTML=
-` <b>
-${data.user} </b> <br>
+div.innerHTML =
+`
+<b>
+${data.user}
+</b>
+
+<br>
 
 ${data.message}
 
@@ -303,8 +397,12 @@ document.getElementById(
 "messages"
 );
 
-if(box){
+if(
+box
+){
+
 box.innerHTML="";
+
 }
 
 }
