@@ -9,7 +9,6 @@ background:#f5e6d8;
 color:#3b2f2f;
 }
 
-/* LOGIN */
 .container{
 text-align:center;
 margin-top:100px;
@@ -35,11 +34,8 @@ background:#8b5e3c;
 color:white;
 }
 
-button:hover{
-background:#6f452b;
-}
+button:hover
 
-/* CHAT */
 .chat-container{
 width:90%;
 max-width:500px;
@@ -54,7 +50,6 @@ padding:10px;
 border-radius:10px 10px 0 0;
 }
 
-/* MESSAGES BOX */
 .messages{
 height:400px;
 overflow-y:auto;
@@ -65,12 +60,11 @@ display:flex;
 flex-direction:column;
 }
 
-/* BUBBLES */
 .bubble{
-padding:8px;
-margin:5px;
-border-radius:10px;
-max-width:70%;
+padding:10px;
+margin:8px 0;
+border-radius:14px;
+max-width:75%;
 word-wrap:break-word;
 }
 
@@ -83,10 +77,9 @@ align-self:flex-start;
 .right{
 background:#6f452b;
 color:white;
-margin-left:auto;
+align-self:flex-end;
 }
 
-/* INPUT AREA */
 .bottom{
 display:flex;
 gap:5px;
@@ -95,11 +88,17 @@ margin-top:10px;
 
 .bottom input{
 flex:1;
+width:auto;
 }
 
 .typing{
-font-size:14px;
-color:#8b5e3c;
 height:20px;
+font-size:14px;
 padding-left:5px;
+color:#8b5e3c;
+}
+
+small{
+opacity:.7;
+font-size:11px;
 }
