@@ -6,148 +6,305 @@ let room = null;
 /* SOCKET */
 function initSocket() {
 
-  if (typeof io === "undefined") {
-    console.log("io not loaded");
-    return;
-  }
+if (typeof io === "undefined") {
+console.log("io not loaded");
+return;
+}
 
-  socket = io("https://chitchat-backend-ieyw.onrender.com", {
-    transports: ["polling"]
-  });
+socket = io(
+"https://chitchat-backend-ieyw.onrender.com",
+{
+transports:["polling"]
+}
+);
 
-  socket.on("connect", () => {
+socket.on("connect",()=>{
 
-    console.log("CONNECTED:", socket.id);
+console.log(
+"CONNECTED:",
+socket.id
+);
 
-    room = sessionStorage.getItem("invite");
+room =
+sessionStorage.getItem(
+"invite"
+);
 
-    if (room) {
-      socket.emit("join-room", room);
-    }
+if(room){
+socket.emit(
+"join-room",
+room
+);
+}
 
-  });
+});
 
-  socket.on("receive-message", (data) => {
-    addMessage(data);
-  });
+socket.on(
+"receive-message",
+(data)=>{
+addMessage(data);
+}
+);
 
-  socket.on("chat-history", (messages) => {
-    document.getElementById("messages").innerHTML = "";
+socket.on(
+"chat-history",
+(messages)=>{
 
-    messages.forEach(addMessage);
-  });
+let box =
+document.getElementById(
+"messages"
+);
+
+if(box){
+box.innerHTML="";
+}
+
+messages.forEach(
+addMessage
+);
+
+}
+);
 
 }
 
 initSocket();
 
 /* LOGIN */
-function enterChat() {
+function enterChat(){
 
-  let name =
-    document.getElementById("name").value.trim();
+let name =
+document
+.getElementById(
+"name"
+)
+.value
+.trim();
 
-  let code =
-    document.getElementById("invite").value.trim();
+let code =
+document
+.getElementById(
+"invite"
+)
+.value
+.trim();
 
-  if (!name) {
-    alert("Enter name");
-    return;
-  }
+if(!name){
+alert(
+"Enter name"
+);
+return;
+}
 
-  if (code !== SECRET_CODE) {
-    alert("Wrong code");
-    return;
-  }
+if(
+code !==
+SECRET_CODE
+){
+alert(
+"Wrong code"
+);
+return;
+}
 
-  sessionStorage.setItem("user", name);
-  sessionStorage.setItem("invite", code);
+sessionStorage.setItem(
+"user",
+name
+);
 
-  location.href = "chat.html";
+sessionStorage.setItem(
+"invite",
+code
+);
+
+location.href =
+"chat.html";
 
 }
 
 /* CHAT PAGE */
-if (
-window.location.pathname.includes("chat.html")
-) {
 
-  let user =
-    sessionStorage.getItem("user");
+if(
+window.location.pathname.includes(
+"chat.html"
+)
+){
 
-  if (!user) {
-    location.href = "index.html";
-  }
+let user =
+sessionStorage.getItem(
+"user"
+);
 
-  document.getElementById(
-    "userName"
-  ).innerText = user;
+if(
+!user
+){
+location.href =
+"index.html";
+}
+
+document
+.getElementById(
+"userName"
+)
+.innerText =
+user;
+
+/* ENTER SEND */
+
+let msg =
+document.getElementById(
+"msg"
+);
+
+if(msg){
+
+msg.addEventListener(
+"keydown",
+(e)=>{
+
+if(
+e.key==="Enter"
+){
+sendMessage();
+}
+
+}
+);
+
+}
 
 }
 
 /* SEND */
-function sendMessage() {
 
-  if (!socket) {
-    console.log("NO SOCKET");
-    return;
-  }
+function sendMessage(){
 
-  let input =
-    document.getElementById("msg");
+if(
+!socket
+){
+console.log(
+"NO SOCKET"
+);
+return;
+}
 
-  let text =
-    input.value.trim();
+let input =
+document
+.getElementById(
+"msg"
+);
 
-  if (!text) return;
+if(
+!input
+)
+return;
 
-  socket.emit(
-    "send-message",
-    {
-      room:
-        sessionStorage.getItem("invite"),
+let text =
+input
+.value
+.trim();
 
-      user:
-        sessionStorage.getItem("user"),
+if(
+!text
+)
+return;
 
-      message:
-        text,
+socket.emit(
+"send-message",
+{
 
-      time:
-        new Date()
-        .toLocaleTimeString()
-    }
-  );
+room:
+sessionStorage.getItem(
+"invite"
+),
 
-  input.value = "";
+user:
+sessionStorage.getItem(
+"user"
+),
+
+message:
+text,
+
+time:
+new Date()
+.toLocaleTimeString()
 
 }
 
-/* UI */
-function addMessage(data) {
+);
+
+input.value="";
+
+}
+
+/* MESSAGE UI */
+
+function addMessage(data){
 
 let box =
-document.getElementById("messages");
+document.getElementById(
+"messages"
+);
 
-if(!box) return;
+if(
+!box
+)
+return;
+
+let current =
+sessionStorage.getItem(
+"user"
+);
 
 let div =
-document.createElement("div");
+document.createElement(
+"div"
+);
 
-div.innerHTML = `
-<b>${data.user}</b><br>
+/* IMPORTANT FIX */
+div.className =
+"bubble " +
+(
+data.user === current
+?
+"right"
+:
+"left"
+);
+
+div.innerHTML=
+` <b>
+${data.user} </b> <br>
+
 ${data.message}
+
+<br>
+
+<small>
+${data.time}
+</small>
 `;
 
-box.appendChild(div);
+box.appendChild(
+div
+);
 
 box.scrollTop =
 box.scrollHeight;
 
 }
 
-function clearChat() {
+/* CLEAR */
+
+function clearChat(){
+
+let box =
 document.getElementById(
 "messages"
-).innerHTML = "";
+);
+
+if(box){
+box.innerHTML="";
+}
+
 }
